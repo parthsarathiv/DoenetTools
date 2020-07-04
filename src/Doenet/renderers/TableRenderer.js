@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseRenderer from './BaseRenderer';
 import ReactTable from 'react-table';
-import reacttablestyle from 'react-table/react-table.css';
+//import reacttablestyle from 'react-table/react-table.css';
 
 class TableRenderer extends BaseRenderer {
   constructor({ key, cells, width, height }) {

@@ -276,6 +276,7 @@ function handlePrevious(e) {
 }
   
   return (
+      
     <SliderContainer  ref = {containerRef} labeled = {(SVs.showControls||SVs.label)} noTicked = {SVs.showTicks === false}>
         <div style = {{height: (SVs.showControls||SVs.label) ? "20px": "0px"}}>
             {SVs.label? <StyledValueLabel>{SVs.label}</StyledValueLabel> : null}
