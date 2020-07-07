@@ -8,29 +8,23 @@ const Styles = styled.div`
 padding: 1rem;
 
 table {
-  border-spacing: 0;
-  border: 1px solid black;
 
-  tr {
-    :last-child {
-      td {
-        border-bottom: 0;
-      }
-    }
-  }
+  border-collapse: collapse;
 
+  // tr {
+  //   border-bottom: 1px solid grey;
+  // }
+
+  tbody tr:nth-child(even) {background: #FFF}
+  tbody tr:nth-child(odd) {background: #E3E3E3}
+  
   th,
   td {
-    font-weight: normal;
+    font-family: Verdana;
     text-align: left;
     margin: 0;
     padding: 0.5rem;
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
-
-    :last-child {
-      border-right: 0;
-    }
+    min-width: 3rem;
   }
 }
 `;
