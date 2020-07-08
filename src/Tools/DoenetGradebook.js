@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import axios from 'axios';
+import styled from 'styled-components'
+import { useTable } from 'react-table'
+
 axios.defaults.withCredentials = true;
 import {
     BrowserRouter as Router,
@@ -14,6 +17,79 @@ import "../imports/table.css";
 import "../imports/doenet.css";
 import ToolLayout from "./ToolLayout/ToolLayout";
 import ToolLayoutPanel from "./ToolLayout/ToolLayoutPanel";
+
+
+const Styles = styled.div`
+  padding: 1rem;
+
+  table {
+    border-spacing: 0;
+    border: 1px solid black;
+
+    tr {
+      :last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
+    }
+
+    th,
+    td {
+      margin: 0;
+      padding: 0.5rem;
+      border-bottom: 1px solid black;
+      border-right: 1px solid black;
+
+      :last-child {
+        border-right: 0;
+      }
+    }
+  }
+`
+
+function Table({ columns, data }) {
+    // Use the state and functions returned from useTable to build your UI
+    const {
+      getTableProps,
+      getTableBodyProps,
+      headerGroups,
+      rows,
+      prepareRow,
+    } = useTable({
+      columns,
+      data,
+    })
+  
+    // Render the UI for your table
+    return (
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map(column => (
+                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row, i) => {
+            prepareRow(row)
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map(cell => {
+                  return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    )
+  }
+  
+
 
 function sortArraysByElementI(arrarr, i) {
     // TODO: finish
@@ -79,6 +155,9 @@ class GradebookOverview extends Component {
             }
         }).catch(err => console.log((err.response).toString()));
 
+    
+        
+
         axios.get("/api/loadAssignments.php?courseId=" + this.courseId).then(resp => {
             let data = resp.data
             // From API:
@@ -101,6 +180,9 @@ class GradebookOverview extends Component {
                 this.getOverviewData();
             }
         }).catch(err => console.log((err.response).toString()));
+
+        
+        
     }
 
     getOverviewData() {
@@ -140,6 +222,9 @@ class GradebookOverview extends Component {
 
             this.setState({ overviewLoaded: true })
         }).catch(err => console.log(err));
+
+        
+        
     }
 
     get assignmentsTable() {
@@ -149,15 +234,39 @@ class GradebookOverview extends Component {
 
         this._assignmentsTable = {};
 
-        this._assignmentsTable.headers = []; // th elements in the all assignments table
+        this._assignmentsTable.headers = [
+            {
+                Header: "Name",
+                accessor: "name",
+            },
+        ]; // th elements in the all assignments table
         for (let i in this.assignments) {
             let { assignmentId, assignmentName } = this.assignments[i];
             this._assignmentsTable.headers.push(
-                <th key={"headerCell_" + assignmentId} className="assignments-table-header">
-                    <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignmentName}</Link>
-                </th>
+                {
+                    Header: <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignmentName}</Link>,
+                    accessor: assignmentId,
+                    //Cell: <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignmentName}</Link>
+                }
             )
         }
+
+        this._assignmentsTable.headers.push(
+            {
+                Header: "Weighted Credt",
+                accessor: "weight",
+                
+            }
+        )
+        this._assignmentsTable.headers.push(
+            {
+                Header: "Grade",
+                accessor: "grade",
+                
+            }
+        )
+
+
 
         this._assignmentsTable.rows = [];
         for (let username in this.students) {
@@ -168,29 +277,20 @@ class GradebookOverview extends Component {
                 overrideGrade = this.students[username].overrideCourseGrade;
             let grade = overrideGrade ? overrideGrade : generatedGrade
 
-            this._assignmentsTable.rows.push(
-                <tr key={"studentRow_" + username}>
-                    <td className="DTable_header-column" key={"studentName_" + username}>{firstName + " " + lastName} (<span className="studentUsername">{username}</span>)</td>
-                    {(() => { // for immediate invocation
-                        let arr = [];
+            let row = {}
 
-                        for (let i in this.assignments) {
-                            let { assignmentId, assignmentName } = this.assignments[i]
-                            arr.push(<td key={"studentAssignmentGrade_" + username + "_" + assignmentId}>
-                                {
-                                    (this.overviewData[username].assignments[assignmentId]) * 100 + "%" // guaranteed to be initialized, if initialized to null, then this will result in "0%"
-                                }
-                            </td>);
-                        }
+            row["name"] = firstName + " " + lastName + "(" +  username + ")"
 
-                        // arr.sort() TODO: use helper at top
 
-                        return arr;
-                    })()}
-                    <td className="DTable_footer-column" key={"courseCredit_" + username}>{credit}</td>
-                    <td className="DTable_footer-column" key={"courseGrade_" + username}>{grade}</td>
-                </tr>
-            );
+            for (let i in this.assignments) {
+                let { assignmentId, assignmentName } = this.assignments[i]
+                row[assignmentId] = (this.overviewData[username].assignments[assignmentId]) * 100 + "%"
+            }
+
+            row["weight"] = credit
+            row["grade"] = grade
+
+            this._assignmentsTable.rows.push(row);
         }
 
         return this._assignmentsTable
@@ -205,22 +305,16 @@ class GradebookOverview extends Component {
             </div>)
         }
 
-        return (<div>
-            <h2>Gradebook Overview</h2>
-            <table className="Doenet-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        {this.assignmentsTable.headers} {/* // TODO: https://css-tricks.com/snippets/css/text-rotation/ */}
-                        <th>Weighted Credit</th>
-                        <th>Grade</th>
-                    </tr>
-                </thead>
-                <tbody> {/* TODO: https://stackoverflow.com/questions/1312236/how-do-i-create-an-html-table-with-fixed-frozen-left-column-and-scrollable-body} */}
-                    {this.assignmentsTable.rows}
-                </tbody>
-            </table>
-        </div>)
+        // console.log("overviewdate", this.overviewData);
+        // console.log("assgn", this.assignments);
+        // console.log("studs", this.students);
+        
+        
+        return (
+            <Styles>
+                <Table columns = {this.assignmentsTable.headers} data = {this.assignmentsTable.rows}/>
+            </Styles>
+        )
     }
 }
 
