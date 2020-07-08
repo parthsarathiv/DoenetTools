@@ -411,7 +411,7 @@ class GradebookAssignmentView extends Component {
             //     )
             // );
 
-            console.log(data)
+            //console.log("assgndata", data)
 
             this.assignmentData = {}
             for (let username in this.students) { // initialize object
@@ -445,50 +445,60 @@ class GradebookAssignmentView extends Component {
         this._attemptsTable = {};
 
         // find the max number of attempts, table has number of cols based on max
+
         let maxAttempts = 0;
+
+        
         for (let student in this.assignmentData) {
             let len = Object.keys(this.assignmentData[student].attempts).length;
 
             if (len > maxAttempts) maxAttempts = len;
         }
 
-        this._attemptsTable.headers = [];
+        this._attemptsTable.headers = [
+            {
+                Header: "Student",
+                accessor: "student",
+            }
+        ];
+
         for (let i = 1; i <= maxAttempts; i++) {
-            this._attemptsTable.headers.push(<th>Attempt {i}</th>);
+            this._attemptsTable.headers.push(
+            {
+                Header: "Attempt " + i,
+                accessor: "a"+i,
+            })
         }
+
+        this._attemptsTable.headers.push({
+            Header: "Assignment Grade",
+            accessor: "grade",
+        })
+
 
         this._attemptsTable.rows = [];
         for (let username in this.students) {
             let { firstName,
                 lastName } = this.students[username];
+            
+            let row = {};
 
-            this._attemptsTable.rows.push(
-                <tr>
-                    <td className="DTable_header-column" key={"studentName_" + username}>{firstName + " " + lastName} (<span className="studentUsername">{username}</span>)</td>
-                    {(() => { // immediate invocation
-                        let arr = [];
+            row["student"] = firstName + " " + lastName + "(" + username + ")"
 
-                        for (let i = 1; i <= maxAttempts; i++) {
-                            let attemptCredit = this.assignmentData[username].attempts[i];
+            for (let i = 1; i <= maxAttempts; i++) {
+                let attemptCredit = this.assignmentData[username].attempts[i];
 
-                            arr.push(
-                                <td>
-                                    <Link to={`/attempt/?assignmentId=${this.state.assignmentId}&username=${username}&attemptNumber=${i}`}>
-                                        {
-                                            attemptCredit ? attemptCredit * 100 + "%" : "" // if attemptCredit is `undefined`, we still want a table cell so that the footer column still shows up right.
-                                        }
-                                    </Link>
-                                </td>
-                            );
-                        }
+                row[("a"+i)] = 
+                <Link to={`/attempt/?assignmentId=${this.state.assignmentId}&username=${username}&attemptNumber=${i}`}>
+                {
+                    attemptCredit ? attemptCredit * 100 + "%" : "" // if attemptCredit is `undefined`, we still want a table cell so that the footer column still shows up right.
+                }
+                </Link>
+            }
 
-                        return arr;
-                    })()}
-                    <td className="DTable_footer-column" key={"assignmentGrade_" + username}>
-                        {this.assignmentData[username].grade ? this.assignmentData[username].grade : "" /* we only need to display a grade if there is one */}
-                    </td>
-                </tr>
-            );
+            row["grade"] = this.assignmentData[username].grade ? this.assignmentData[username].grade : ""
+            
+            this._attemptsTable.rows.push(row);
         }
 
         return this._attemptsTable;
@@ -515,18 +525,9 @@ class GradebookAssignmentView extends Component {
 
         return (<div>
             <h2>{this.assignments[this.state.assignmentId]}</h2>
-            <table className="Doenet-table">
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        {this.attemptsTable.headers}
-                        <th>Assignment Grade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.attemptsTable.rows}
-                </tbody>
-            </table>
+            <Styles>
+                <Table columns = {this.attemptsTable.headers} data = {this.attemptsTable.rows}/>
+            </Styles>
         </div>);
     }
 }
