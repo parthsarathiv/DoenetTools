@@ -23,27 +23,27 @@ const Styles = styled.div`
   padding: 1rem;
 
   table {
+    border-collapse: collapse;
     border-spacing: 0;
-    border: 1px solid black;
+    
+    thead {
+        border-bottom: 1px solid;
+    }
 
     tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-        }
-      }
+      
+    }
+
+    tbody tr:nth-child(even) {background: #CCC}
+    tbody tr:nth-child(odd) {background: #FFF}
+
+    td:first-child {
+        text-align: left;
     }
 
     th,
     td {
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid black;
-      border-right: 1px solid black;
-
-      :last-child {
-        border-right: 0;
-      }
+        text-align: center;
     }
   }
 `
