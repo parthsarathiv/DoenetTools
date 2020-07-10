@@ -57,12 +57,12 @@ const Label = styled.p`
 function generateNumericLabels (points, div_width, point_start_val) {
 
   return (
-      [points.map(point => (
-          <Tick key = {point} x = {`${(point - point_start_val) * div_width}px`}/>
+      [points.map((point, index) => (
+          <Tick key = {point} x = {`${(point - point_start_val) * div_width}px`} data-cy = {"tick-" + index}/>
           )
       ),
-      points.map(point => (
-              <Label key = {point} x = {`${((point - point_start_val) * div_width) - 3}px`}>{point}</Label>
+      points.map((point, index) => (
+              <Label key = {point} x = {`${((point - point_start_val) * div_width) - 3}px`} data-cy = {"tick-label-" + index}>{point}</Label>
           )
       )
       ]
@@ -73,11 +73,11 @@ function generateTextLabels (points, div_width) {
 
   return (
       [points.map((point, index) => (
-          <Tick key = {point} x = {`${index * div_width}px`}/>
+          <Tick key = {point} x = {`${index * div_width}px`} data-cy = {"tick-" + index} />
           )
       ),
       points.map((point, index) => (
-              <Label key = {point} x = {`${(index * div_width) - 3}px`}>{point}</Label>
+              <Label key = {point} x = {`${(index * div_width) - 3}px`} data-cy = {"tick-label-" + index}>{point}</Label>
           )
       )
       ]
@@ -131,6 +131,8 @@ export default function Slider(props) {
       if(containerRef.current){
           const rect = containerRef.current.getBoundingClientRect();
           setOffsetLeft(rect.left);
+          console.log("offset", rect.left);
+          
       }
   }, []);
 
@@ -155,15 +157,15 @@ export default function Slider(props) {
     return (
         <SliderContainer labeled = {(SVs.showControls||SVs.label)} noTicked = {SVs.showTicks === false} ref = {containerRef}>
             <div style = {{height: (SVs.showControls||SVs.label) ? "20px": "0px"}}>
-                {SVs.label? <StyledValueLabel>{SVs.label}</StyledValueLabel> : null}
+                {SVs.label? <StyledValueLabel data-cy = "label" >{SVs.label}</StyledValueLabel> : null}
                 {SVs.showControls? <>
-                <button style = {{float: "right", userSelect: "none"}} onClick = {handleNext} disabled>Next</button>
-                <button style = {{float: "right", userSelect: "none"}} onClick = {handlePrevious} disabled>Prev</button>
+                <button style = {{float: "right", userSelect: "none"}} onClick = {handleNext} disabled data-cy = "button-next">Next</button>
+                <button style = {{float: "right", userSelect: "none"}} onClick = {handlePrevious} disabled data-cy = "button-prev">Prev</button>
                 </> : null}
             </div>
             <SubContainer2>
                 <StyledSlider width = {`${500}px`} >
-                <StyledThumb disabled style={{left: `${-3}px`}}/>
+                <StyledThumb disabled style={{left: `${-3}px`}} data-cy = "slider-handle"/>
                 {(SVs.showTicks === false) ? null : ((SVs.sliderType === "text") ? generateTextLabels(SVs.items, divisionWidth) : generateNumericLabels(SVs.items, divisionWidth, startValue))}
                 </StyledSlider>
             </SubContainer2>
@@ -171,6 +173,8 @@ export default function Slider(props) {
     );
 }
 function handleDragEnter(e) {
+    console.log("enter---------", e.nativeEvent.clientX);
+    
     setIsMouseDown(true);
     setThumbXPos(e.nativeEvent.clientX - offsetLeft);
 
@@ -194,6 +198,7 @@ function handleDragEnter(e) {
 
 
 function handleDragExit(e) {
+    console.log("exit---------", e.nativeEvent.clientX);
     if(!isMouseDown){
         return;
     }
@@ -278,17 +283,17 @@ function handlePrevious(e) {
   return (
     <SliderContainer  ref = {containerRef} labeled = {(SVs.showControls||SVs.label)} noTicked = {SVs.showTicks === false}>
         <div style = {{height: (SVs.showControls||SVs.label) ? "20px": "0px"}}>
-            {SVs.label? <StyledValueLabel>{SVs.label}</StyledValueLabel> : null}
+            {SVs.label? <StyledValueLabel data-cy = "label">{SVs.label}</StyledValueLabel> : null}
             {SVs.showControls? <>
-            <button style = {{float: "right", userSelect: "none"}} onClick = {handleNext}>Next</button>
-            <button style = {{float: "right", userSelect: "none"}} onClick = {handlePrevious}>Prev</button>
+            <button style = {{float: "right", userSelect: "none"}} onClick = {handleNext} data-cy = "button-next">Next</button>
+            <button style = {{float: "right", userSelect: "none"}} onClick = {handlePrevious} data-cy = "button-prev">Prev</button>
             </> : null}
         </div>
         <SubContainer2 onMouseDown = {handleDragEnter} onMouseUp = {handleDragExit} onMouseMove = {handleDragThrough} onMouseLeave = {handleDragExit}>
             <StyledSlider width = {`${500}px`} >
             <Spring
                 to={{ x: thumbXPos }}>
-                {props => <StyledThumb style={{left: `${props.x - 3}px`}}/>}
+                {props => <StyledThumb style={{left: `${props.x - 3}px`}} data-cy = "slider-handle"/>}
             </Spring>
             {(SVs.showTicks === false) ? null : ((SVs.sliderType === "text") ? generateTextLabels(SVs.items, divisionWidth) : generateNumericLabels(SVs.items, divisionWidth, startValue))}
             </StyledSlider>

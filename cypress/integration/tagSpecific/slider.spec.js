@@ -7,25 +7,26 @@ describe('Slider Tag Tests', function () {
   })
 
 
-  it('move default two number slider', () => {
+  it('number slider', () => {
     cy.window().then((win) => {
       win.postMessage({
         doenetML: `
-  <text>a</text>
   <slider>
     <number>1</number>
     <number>2</number>
+    <number>3</number>
   </slider>
     `}, "*");
     });
 
-    cy.get('#\\/_text1').should('have.text', 'a')  // to wait for page to load
-
+    //cy.get('#\\/_text1').should('have.text', 'a')  // to wait for page to load
     cy.log('move handle to 100 px');
-    cy.get('[data-cy=\\/_slider1divslider-handle]')
+    cy.get('[data-cy= slider-handle]')
       .trigger('mousedown')
-      .trigger('mousemove', { clientX: 145, clientY: 0 })
+      .trigger('mousemove', {clientX: 150, clientY: 0 })
       .trigger('mouseup')
+    
+    
 
 
     cy.window().then((win) => {
@@ -33,10 +34,10 @@ describe('Slider Tag Tests', function () {
       let slider1value = components['/_slider1'].stateValues.value;
       expect(slider1value).eq(1)
     })
-
-    cy.get('[data-cy=\\/_slider1divslider-handle]')
+    cy.wait(500);
+    cy.get('[data-cy=slider-handle]')
       .trigger('mousedown')
-      .trigger('mousemove', { clientX: 160, clientY: 0 })
+      .trigger('mousemove', {clientX: 200, clientY: 0 })
       .trigger('mouseup')
 
     cy.window().then((win) => {
@@ -45,13 +46,62 @@ describe('Slider Tag Tests', function () {
       expect(slider1value).eq(2)
     })
 
-    cy.get('[data-cy=\\/_slider1divslider-track]')
+    cy.get('[data-cy=slider-handle]')
+      .trigger('mousedown')
+      .trigger('mousemove', { which:1, pageX: 80, pageY: 0 })
+      .trigger('mouseup')
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(2)
+    })
+
+    cy.get('[data-cy=slider-handle]')
+      .trigger('mousedown')
+      .trigger('mousemove', { which:1, pageX: 80, pageY: 0 })
+      .trigger('mouseup')
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(3)
+    })
+
+    cy.get('[data-cy=tick-0]')
       .click('left');
 
     cy.window().then((win) => {
       let components = Object.assign({}, win.state.components);
       let slider1value = components['/_slider1'].stateValues.value;
       expect(slider1value).eq(1)
+    })
+
+    cy.get('[data-cy=tick-1]')
+      .click('left');
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(2)
+    })
+
+    cy.get('[data-cy=tick-label-0]')
+      .click('left');
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(1)
+    })
+
+    cy.get('[data-cy=tick-label-1]')
+      .click('left');
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(2)
     })
   })
 })
