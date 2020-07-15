@@ -1,3 +1,5 @@
+//include copy tests
+
 describe('Slider Tag Tests', function () {
 
   beforeEach(() => {
@@ -5,7 +7,7 @@ describe('Slider Tag Tests', function () {
 
   })
 
-  it('number slider label test', () => {
+  it('number slider hide test', () => {
     cy.window().then((win) => {
       win.postMessage({
         doenetML: `
@@ -551,7 +553,45 @@ describe('Slider Tag Tests', function () {
 
   })
 
+  it('slider copy test', () => {
+    cy.window().then((win) => {
+      win.postMessage({
+        doenetML: `
+  <slider showControls label = "testlabel">
+    <number>1</number>
+    <number>2</number>
+    <number>3</number>
+  </slider>
 
+  <copy tname = '/_slider1' />
+    `}, "*");
+    });
+
+    cy.get('[data-cy=button-next]')
+      .eq(0)
+      .click('left');
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+
+      let slider1value = components['__slider_mpsCoH43rBvf'].stateValues.value;
+      expect(slider1value).eq(2)
+    })
+
+    cy.wait(300)
+
+    cy.get('[data-cy=button-prev]')
+      .eq(1)
+      .click('left');
+
+    cy.window().then((win) => {
+      let components = Object.assign({}, win.state.components);
+      
+      let slider1value = components['/_slider1'].stateValues.value;
+      expect(slider1value).eq(1)
+    })
+
+  })
   
 })
 
