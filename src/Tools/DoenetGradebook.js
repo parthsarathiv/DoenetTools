@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios';
 import styled from 'styled-components'
-import { useTable, useSortBy } from 'react-table'
+import { useTable, useSortBy, useFilters, useGlobalFilter, useAsyncDebounce} from 'react-table'
 
 axios.defaults.withCredentials = true;
 import {
@@ -17,6 +17,7 @@ import "../imports/table.css";
 import "../imports/doenet.css";
 import ToolLayout from "./ToolLayout/ToolLayout";
 import ToolLayoutPanel from "./ToolLayout/ToolLayoutPanel";
+import { faSmile } from '@fortawesome/free-solid-svg-icons';
 
 
 const Styles = styled.div`
@@ -49,6 +50,31 @@ const Styles = styled.div`
 `
 
 function Table({ columns, data }) {
+
+    const filterTypes = React.useMemo(
+        () => ({
+            text: (rows, id, filterValue) => {
+            return rows.filter(row => {
+                const rowValue = row.values[id];
+                return rowValue !== undefined
+                ? String(rowValue)
+                    .toLowerCase()
+                    .startsWith(String(filterValue).toLowerCase())
+                : true;
+            });
+            }
+        }),
+        []
+    );
+
+    const defaultColumn = React.useMemo(
+        () => ({
+            Filter: DefaultColumnFilter
+        }),
+        []
+    );
+    
+
     // Use the state and functions returned from useTable to build your UI
     const {
       getTableProps,
@@ -56,10 +82,20 @@ function Table({ columns, data }) {
       headerGroups,
       rows,
       prepareRow,
+      state,
+      visibleColumns,
+      preGlobalFilteredRows,
+      setGlobalFilter,
     } = useTable({
       columns,
       data,
-    }, useSortBy)
+      defaultColumn, // Be sure to pass the defaultColumn option
+      filterTypes,
+    },  
+        useFilters, // useFilters!
+        useGlobalFilter,
+        useSortBy, // useGlobalFilter
+    )
   
     // Render the UI for your table
     return (
@@ -68,7 +104,9 @@ function Table({ columns, data }) {
           {headerGroups.map(headerGroup => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}</th>
+                <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+                    <div>{column.canFilter ? column.render("Filter") : null}</div>
+                </th>
               ))}
             </tr>
           ))}
@@ -108,6 +146,23 @@ function gradeSorting(a, b, columnID){
 
     return ga[0].localeCompare(gb[0]) || order[ga[1]] - order[gb[1]];
 }
+
+function DefaultColumnFilter({
+    column: { filterValue, preFilteredRows, setFilter },
+  }) {
+    const count = preFilteredRows.length
+  
+    return (
+      <input
+        value={filterValue || ''}
+        onChange={e => {
+          setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+        }}
+        placeholder={`Search ${count} records...`}
+      />
+    )
+  }
+
 
 function sortArraysByElementI(arrarr, i) {
     // TODO: finish
@@ -264,6 +319,7 @@ class GradebookOverview extends Component {
                 {
                     Header: <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignmentName}</Link>,
                     accessor: assignmentId,
+                    disableFilters: true
                     //Cell: <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignmentName}</Link>
                 }
             )
@@ -273,6 +329,7 @@ class GradebookOverview extends Component {
             {
                 Header: "Weighted Credt",
                 accessor: "weight",
+                disableFilters: true
                 
             }
         )
@@ -281,6 +338,7 @@ class GradebookOverview extends Component {
                 Header: "Grade",
                 accessor: "grade",
                 sortType: gradeSorting,
+                disableFilters: true
             },
         )
 
@@ -485,12 +543,14 @@ class GradebookAssignmentView extends Component {
             {
                 Header: "Attempt " + i,
                 accessor: "a"+i,
+                disableFilters: true
             })
         }
 
         this._attemptsTable.headers.push({
             Header: "Assignment Grade",
             accessor: "grade",
+            disableFilters: true
         })
 
 
