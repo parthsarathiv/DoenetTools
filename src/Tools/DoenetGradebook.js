@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios';
 import styled from 'styled-components'
-import { useTable } from 'react-table'
+import { useTable, useSortBy } from 'react-table'
 
 axios.defaults.withCredentials = true;
 import {
@@ -59,7 +59,7 @@ function Table({ columns, data }) {
     } = useTable({
       columns,
       data,
-    })
+    }, useSortBy)
   
     // Render the UI for your table
     return (
@@ -68,7 +68,7 @@ function Table({ columns, data }) {
           {headerGroups.map(headerGroup => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}</th>
               ))}
             </tr>
           ))}
@@ -89,7 +89,25 @@ function Table({ columns, data }) {
     )
   }
   
+function gradeSorting(a, b, columnID){
+    const order = { '+': -1, '-': 1, undefined: 0 };
+    const ga = a.cells[9].value
+    const gb = b.cells[9].value
+    
+    if ((ga == null || ga == '') && (gb == null || gb == '')){
+        return 0
+    }
 
+    else if (ga == null || ga == ''){
+        return 1
+    }
+
+    else if (gb == null || gb == ''){
+        return -1
+    }
+
+    return ga[0].localeCompare(gb[0]) || order[ga[1]] - order[gb[1]];
+}
 
 function sortArraysByElementI(arrarr, i) {
     // TODO: finish
@@ -262,8 +280,8 @@ class GradebookOverview extends Component {
             {
                 Header: "Grade",
                 accessor: "grade",
-                
-            }
+                sortType: gradeSorting,
+            },
         )
 
 
