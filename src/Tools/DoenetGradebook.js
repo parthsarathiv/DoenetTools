@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import axios from 'axios';
 import styled from 'styled-components'
 import { useTable, useSortBy, useFilters, useGlobalFilter, useAsyncDebounce} from 'react-table'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 axios.defaults.withCredentials = true;
 import {
@@ -17,7 +18,7 @@ import "../imports/table.css";
 import "../imports/doenet.css";
 import ToolLayout from "./ToolLayout/ToolLayout";
 import ToolLayoutPanel from "./ToolLayout/ToolLayoutPanel";
-import { faSmile } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 
 const Styles = styled.div`
@@ -40,11 +41,22 @@ const Styles = styled.div`
 
     td:first-child {
         text-align: left;
+        max-width: 10rem;
+    }
+    th:first-child {
+        max-width: 10rem;
     }
 
     th,
     td {
+        user-select: none;
         text-align: center;
+        max-width: 5rem;
+        text-overflow: ellipsis;
+
+        /* Required for text-overflow to do anything */
+        white-space: nowrap;
+        overflow: hidden;
     }
   }
 `
@@ -104,7 +116,11 @@ function Table({ columns, data }) {
           {headerGroups.map(headerGroup => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                    <span>
+                        {column.isSorted ? (column.isSortedDesc ? <FontAwesomeIcon icon={faSortDown} /> : <FontAwesomeIcon icon={faSortUp} />) : <FontAwesomeIcon icon={faSort} />}
+                    </span>
+                    {column.render('Header')}
                     <div>{column.canFilter ? column.render("Filter") : null}</div>
                 </th>
               ))}
