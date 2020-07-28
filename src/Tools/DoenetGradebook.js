@@ -21,19 +21,26 @@ import ToolLayoutPanel from "./ToolLayout/ToolLayoutPanel";
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 
+
 const Styles = styled.div`
   padding: 1rem;
 
   table {
     border-collapse: collapse;
     border-spacing: 0;
+    border: 1px solid gray;
     
     thead {
-        border-bottom: 1px solid;
+        border-bottom: 1px solid gray;
+    }
+    
+    a {
+        color: inherit;
+        text-decoration: none;
     }
 
-    tr {
-      
+    .sortIcon {
+        padding-left: 4px;
     }
 
     tbody tr:nth-child(even) {background: #CCC}
@@ -41,25 +48,94 @@ const Styles = styled.div`
 
     td:first-child {
         text-align: left;
-        max-width: 10rem;
+        max-width: 15rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
-    th:first-child {
-        max-width: 10rem;
+    th {
+        user-select: none;
+        vertical-align: text-top;
+        max-width: 4rem;
+        word-wrap: break-word;
     }
 
-    th,
+    th:first-child {
+        max-width: 15rem;
+        transform: rotate(0deg);
+    }
+
+
     td {
         user-select: none;
         text-align: center;
         max-width: 5rem;
-        text-overflow: ellipsis;
+    }
 
-        /* Required for text-overflow to do anything */
-        white-space: nowrap;
-        overflow: hidden;
+    td, th {
+        border-right: 1px solid gray;
+
+        :last-child {
+            border-right: 0;
+        }
     }
   }
 `
+
+// const Styles = styled.div`
+//   padding: 1rem;
+
+//   table {
+//     border-collapse: collapse;
+//     border-spacing: 0;
+    
+//     thead {
+//         border-bottom: 1px solid;
+//     }
+    
+//     a {
+//         color: inherit;
+//         text-decoration: none;
+//     }
+//     .sortIcon {
+//         vertical-align: text-bottom;
+//     }
+//     tbody tr:nth-child(even) {background: #CCC}
+//     tbody tr:nth-child(odd) {background: #FFF}
+
+//     td:first-child {
+//         text-align: left;
+//         max-width: 15rem;
+//         text-overflow: ellipsis;
+//         white-space: nowrap;
+//         overflow: hidden;
+//     }
+//     th{
+//         user-select: none;
+//         vertical-align: text-top;
+//         max-width: 4rem;
+//         word-wrap: break-word;
+//         //transform: rotate(-90deg);
+//         // text-align: left;
+//         //line-height: 5rem;
+//         // text-overflow: ellipsis;
+//         // white-space: nowrap;
+//         // overflow: hidden;
+//     }
+
+//     th:first-child {
+//         max-width: 10rem;
+//         transform: rotate(0deg);
+//     }
+
+
+//     td {
+//         user-select: none;
+//         text-align: center;
+//         max-width: 5rem;
+//     }
+//   }
+// `
 
 function Table({ columns, data }) {
 
@@ -117,11 +193,13 @@ function Table({ columns, data }) {
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
                 <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                    <span>
+                    <div><span>
+                    {column.render('Header')}
+                    <span className = "sortIcon"> 
                         {column.isSorted ? (column.isSortedDesc ? <FontAwesomeIcon icon={faSortDown} /> : <FontAwesomeIcon icon={faSortUp} />) : <FontAwesomeIcon icon={faSort} />}
                     </span>
-                    {column.render('Header')}
                     <div>{column.canFilter ? column.render("Filter") : null}</div>
+                    </span></div>
                 </th>
               ))}
             </tr>
