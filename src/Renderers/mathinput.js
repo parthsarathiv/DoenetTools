@@ -303,7 +303,7 @@ export default class MathInput extends DoenetRenderer {
           key={inputKey}
           id={inputKey}
           ref = {this.inputRef}
-          value={this.textValue}
+          value={this.textValue ? this.mathExpression.toLatex() : ''}
           disabled={this.doenetSvData.disabled}
           onChange={this.onChangeHandler}
           onKeyPress={this.handleKeyPress}
