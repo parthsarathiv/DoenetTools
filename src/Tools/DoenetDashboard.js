@@ -1,23 +1,33 @@
 import React, { useState, useEffect, useRef } from "react";
+
 import ToolLayout from "./ToolLayout/ToolLayout";
 import ToolLayoutPanel from "./ToolLayout/ToolLayoutPanel";
+
 import styled from "styled-components";
-import axios from 'axios';
-import { useTransition, a } from 'react-spring'
-//import useMeasure from './useMeasure'
-import useMedia from './useMedia'
 import './dashboard.css'
 import CourseCard from './DoenetCourseCard'
+
+import { useTransition, a } from 'react-spring'
+import useMedia from './useMedia'
+
+
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   Link,
-  useHistory
 } from "react-router-dom";
-import { getCourses_CI, setSelected_CI, updateCourses_CI } from "../imports/courseInfo";
-import { min } from "moment";
 
+import {useGetCourses, useUpdateCourses} from "../imports/courseFunctions";
+
+import { ReactQueryDevtools } from 'react-query-devtools'
+import {
+  QueryCache,
+  ReactQueryCacheProvider,
+} from "react-query";
+
+
+const queryCache = new QueryCache();
 
 const Button = styled.button`
   width: 60px;
@@ -28,77 +38,56 @@ const Button = styled.button`
   left: 20px;
 `;
 
-
 const alphabet =
   "a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z ";
 
-  function compare (x, y) {
-    // console.log("XY: ", x, y);
-    // console.log("yoooooooooooo");
-    
-    if(x.position != null && y.position != null){
-      // console.log("not nullll");
-      return x.position - y.position
-    }else if(x.position != null){
-      return -1
-    }else if(y.position != null){
-      return 1
-    }else{
-      // console.log(x.shortname, y.shortname);////////////////////////////
-      return x.shortname.localeCompare(y.shortname)
-    }
-  }
-
-  function ignorantcompare (x, y) {
+function compare (x, y) {
+  if(x.position != null && y.position != null){
+    return x.position - y.position
+  }else if(x.position != null){
+    return -1
+  }else if(y.position != null){
+    return 1
+  }else{
     return x.shortname.localeCompare(y.shortname)
   }
+}
   
   export default function DoenetDashboard(props){
+
+    const [updateCourses] = useUpdateCourses();
+
+    const [init, setInit] = useState(true);
 
     const [items, setItems] = useState(null);////////////////make changes
 
     const [dragIndex, setDragIndex] = useState(null);
   
-    const [isLoaded, setIsLoaded] = useState(false)
+    // const [isLoaded, setIsLoaded] = useState(false)
 
-    const [hasClasses, setHasClasses] = useState(false)
+    // const [isFirst, setIsFirst] = useState(true);
+
+    // const [hasClasses, setHasClasses] = useState(false)
 
     const [drag, setDrag] = useState(0)
 
-    // const [dragItem, setDragItem] = useState({index: null, items});
+    const { isLoading, isError, data, error } = useGetCourses();
 
-    // const [dragIndex, setDragIndex] = useState(null);
+    // if(data){
+    //   console.log("data: ", data);
+      
+    //   // for(let index in data['courses']){
+    //   //   data['courses'][index].position = parseInt(index);
+    //   // }
+    //   // setIsFirst(false);
+    // }else{
+    //   console.log("problem", data, isLoading, isError);
+    // }
 
-    useEffect(() => {
-      getCourses_CI(updateCourseInfo);
-      setIsLoaded(true);
-    }, [])
-
-    function updateCourseInfo(courseListArray,selectedCourseObj){
-      // console.log("courses",courseListArray);
-      //console.log("selected",selectedCourseObj);
-      //setSelected_CI("NfzKqYtTgYRyPnmaxc7XB");
-      // console.log("hereeeeeee");////////////////////////////
-
-      courseListArray = courseListArray.sort(compare);
-
-      // console.log("input", courseListArray)
-
-      for(let index in courseListArray){
-        // console.log("position not defined for", courseListArray[index], "at", index);
-        courseListArray[index].position = parseInt(index);
-        // if(courseListArray[index].position === null || courseListArray[index].position === undefined){
-        //   console.log("position not defined for", courseListArray[index], "at", index);
-        //   courseListArray[index].position = parseInt(index);
-        // }
-        // courseListArray[index].ogposition = parseInt(index);
-      }
-      setItems(courseListArray)
-      if(courseListArray.length > 0){
-        setHasClasses(true)
-      }
-
-    }
+    if(init && data){
+      setItems(data['courses'].sort(compare));
+      setInit(false);
+    }    
 
     // useEffect(() => {
     //   axios.get(`/api/loadUserCourses.php?`).then(resp => {
@@ -139,7 +128,7 @@ const alphabet =
       // console.log(mod);
       setItems(mod);
 
-      updateCourses_CI(mod);
+      updateCourses(mod);
       
     }
   
@@ -199,7 +188,7 @@ const alphabet =
         setItems(moditems);
         setDrag(0);
         setDragIndex(null);
-        updateCourses_CI(moditems);
+        updateCourses(moditems);
 
         // let itemsinshortnameorder = [...moditems].sort(ignorantcompare)
         // let backtosquareoneflag = true;
@@ -233,7 +222,7 @@ const alphabet =
     let heights = []
     let routes = []
 
-    if(isLoaded && hasClasses){
+    if(!isLoading && !isError && items && items.length > 0){
       // console.log("loaded");
       heights = new Array(columns).fill(0) // Each column gets a height starting with zero
       gridItems = items.map((child, i) => {
@@ -263,7 +252,9 @@ const alphabet =
     };
 
     return (
-      <Router basename = "/">
+      <ReactQueryCacheProvider queryCache = {queryCache}>
+
+<Router basename = "/">
         <ToolLayout toolName="Dashboard" toolPanelsWidth = {toolPanelsWidthResize} leftPanelClose = {true}>
 
        <ToolLayoutPanel
@@ -283,19 +274,19 @@ const alphabet =
 
             <div className = "dashboardcontainer">
 
-            {hasClasses ? 
+            {(items && items.length > 0) ? 
             <div {...bind} className="list" style={{ height: Math.max(...heights), position: "relative"}} onMouseMove = {handleDragThrough} onMouseUp = {handleDragExit} onMouseLeave = {handleDragExit}>
-              {/* {console.log("items", items)} */}
+              {console.log("items", items)}
               {transitions.map(({ item, props: { xy, ...rest }}, index) => (
                 <a.div className = "adiv" key = {index} style={{ transform: xy.interpolate((x, y) => `translate3d(${x}px,${y}px,0)`), ...rest }}>
                   {/* {console.log(item)} */}
               {drag === 2 ? <div onMouseDown = {(e) => handleDragEnter(index, e)} style = {{height: "100%"}}><CourseCard data = {item} updateCourseColor = {updateCourseColor}/></div> : 
                   <Link to = {`/${item.courseId}`} style = {{textDecoration: 'none'}} 
-                  onClick = {() => setSelected_CI(item.courseId)} onMouseDown = {(e) => handleDragEnter(index, e)}><CourseCard data = {item} updateCourseColor = {updateCourseColor}/></Link>}
+                  onClick = {() => {}/*() => setSelected_CI(item.courseId)*/} onMouseDown = {(e) => handleDragEnter(index, e)}><CourseCard data = {item} updateCourseColor = {updateCourseColor}/></Link>}
                   {/* <CourseCard data = {item} /> */}
                 </a.div>
               ))}
-            </div> : isLoaded ? <p>No classes to display...</p> :
+            </div> : !isLoading ? <p>No classes to display...</p> :
             <p>Loading...</p>
             }
 
@@ -312,6 +303,8 @@ const alphabet =
           </ToolLayoutPanel>  */}
         </ToolLayout>
       </Router>
+      <ReactQueryDevtools initialIsOpen />
+      </ReactQueryCacheProvider>
     );
   }
 
