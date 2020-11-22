@@ -254,7 +254,7 @@ function compare (x, y) {
     return (
       <ReactQueryCacheProvider queryCache = {queryCache}>
 
-<Router basename = "/">
+      <Router basename = "/">
         <ToolLayout toolName="Dashboard" toolPanelsWidth = {toolPanelsWidthResize} leftPanelClose = {true}>
 
        <ToolLayoutPanel

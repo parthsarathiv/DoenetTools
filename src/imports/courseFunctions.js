@@ -10,13 +10,15 @@ import regeneratorRuntime from "regenerator-runtime";
 
 
 const getCourses_CI = async () => {
+  console.log("react query: getCourses");
+  
   const phpUrl = '/api/loadUserCourses.php';
   const data = await axios.get(phpUrl);
   return {"courses": data.data.courseInfo, "selected": data.data.courseInfo[0]};
 }
 
 const updateCourses_CI = (courseArray) => {
-  console.log("called with array", courseArray);
+  console.log("react query: updateCourses", courseArray);
   
   const phpurl = '/api/saveUserCourseModifications.php';
   axios.post(phpurl, courseArray);
