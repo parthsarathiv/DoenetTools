@@ -4,11 +4,12 @@ import DoenetRenderer from './DoenetRenderer';
 import me from 'math-expressions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faLevelDownAlt, faTimes, faCloud, faPercentage } from '@fortawesome/free-solid-svg-icons'
-import styled from 'styled-components';
-import MathJax from 'react-mathjax2';
+import VirtualKeyboard from "./virtualkeyboard"
 import { addStyles, EditableMathField } from "react-mathquill";
 
 addStyles(); //Styling for react-mathquill input field
+const width = "100px"
+const maxWidth = "200px"
 
 // const Prev = styled.div`
 //   font-size: 23px;
@@ -43,6 +44,7 @@ export default class MathInput extends DoenetRenderer {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
+    this.handleVirtualKeyboardClick = this.handleVirtualKeyboardClick.bind(this);
     this.onChangeHandler = this.onChangeHandler.bind(this);
     // this.handleDragEnter = this.handleDragEnter.bind(this);
     // this.handleDragThrough = this.handleDragThrough.bind(this);
@@ -50,7 +52,7 @@ export default class MathInput extends DoenetRenderer {
 
     this.mathExpression = this.doenetSvData.value;
     this.textValue = this.doenetSvData.value.toString();
-
+    this.mathField = null;
     // this.state = {isDragging: false, previewLeftOffset: this.doenetSvData.size * 10 + 80, previewTopOffset: 0, clickXOffset: 0, clickYOffset: 0};
     // this.inputRef = React.createRef();
     // this.mathInputRef = React.createRef();
@@ -153,6 +155,22 @@ export default class MathInput extends DoenetRenderer {
   //   })
   // }
 
+  handleVirtualKeyboardClick(text){
+    this.mathField.focus();
+    if(!text){
+      console.log("Empty value");
+      
+      return;
+    }
+    if(text.split(" ")[0] == "cmd"){
+      this.mathField.cmd(text.split(" ")[1]);
+    }else if(text.split(" ")[0] == "write"){
+      this.mathField.write(text.split(" ")[1]);
+    }else if(text.split(" ")[0] == "keystroke"){
+      this.mathField.keystroke(text.split(" ")[1]);
+    }
+  }
+
   handleKeyPress(e) {
     if (e.key === "Enter") {
       this.valueToRevertTo = this.doenetSvData.immediateValue;
@@ -203,6 +221,8 @@ export default class MathInput extends DoenetRenderer {
 
 
   render() {
+
+    console.log("data", this.doenetSvData);
 
     if (this.doenetSvData.hidden) {
       return null;
@@ -340,6 +360,8 @@ export default class MathInput extends DoenetRenderer {
           onChange={(mathField) => {
             this.onChangeHandler(mathField.latex())
           }}
+          style = {{minWidth: width, maxWidth: maxWidth}}
+          mathquillDidMount = {(mathField) => this.mathField = mathField}
         />
         {/* <p>{this.mathExpression.toLatex()}</p> */}
       </span>
@@ -355,9 +377,10 @@ export default class MathInput extends DoenetRenderer {
         </div>
       </Prev> : 
       null} */}
+
       </span>
       
-    
+      <VirtualKeyboard callback = {this.handleVirtualKeyboardClick} />
   
   </React.Fragment>
 
