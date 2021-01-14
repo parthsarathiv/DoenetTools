@@ -1,218 +1,119 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faWaveSquare,
-  faDatabase,
-  faServer,
-} from "@fortawesome/free-solid-svg-icons";
-import Tool from "../imports/Tool/Tool";
-import NavPanel from "../imports/Tool/NavPanel";
-import MainPanel from "../imports/Tool/MainPanel";
-import SupportPanel from "../imports/Tool/SupportPanel";
-import MenuPanel from "../imports/Tool/MenuPanel";
-import HeaderMenuPanelButton from "../imports/Tool/HeaderMenuPanelButton";
-import ResponsiveControls from "../imports/Tool/ResponsiveControls";
-import Overlay from "../imports/Tool/Overlay";
-import CollapseSection from "../imports/CollapseSection";
-import MenuPanelSection from "../imports/Tool/MenuPanelSection";
-import ActionButton from "../imports/PanelHeaderComponents/ActionButton";
-import MenuItem from "../imports/PanelHeaderComponents/MenuItem";
-import Menu from "../imports/PanelHeaderComponents/Menu";
-import SectionDivider from "../imports/PanelHeaderComponents/SectionDivider";
-import { SelectedElementStore } from "./SelectedElementContext";
+import React, { useRef, useState, useEffect } from 'react';
+import { RecoilRoot, atom, useRecoilValue, useSetRecoilState, useRecoilState, selector } from "recoil";
 
-const alphabet =
-  "a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z ";
+const filterState = atom({
+  key: "filterState",
+  default: 'Show All',
+});
 
-const finalIcon1 = (
-  <FontAwesomeIcon
-    icon={faServer}
-    style={{
-      width: "10px",
-      padding: "2px",
-      backgroundColor: "#e2e2e2",
-      alignSelf: "center",
-      fontSize: "16px",
-      color: "grey",
-    }}
-  />
-);
+const listAtom = atom({
+  key: "listatom",
+  default: [],
+});
 
-const finalIcon2 = (
-  <FontAwesomeIcon
-    icon={faDatabase}
-    style={{
-      width: "10px",
-      padding: "2px",
-      backgroundColor: "#e2e2e2",
-      alignSelf: "center",
-      fontSize: "16px",
-      color: "grey",
-    }}
-  />
-);
-const finalIcon3 = (
-  <FontAwesomeIcon
-    icon={faWaveSquare}
-    style={{
-      width: "10px",
-      padding: "2px",
-      backgroundColor: "#e2e2e2",
-      alignSelf: "center",
-      fontSize: "16px",
-      color: "grey",
-    }}
-  />
-);
+const filteredList = selector({
+  key: 'filtered List',
+  get: ({get}) => {
+    const filter = get(filterState);
+    const list = get(listAtom);
 
-export default function DoenetExampleTool(props) {
-  const [showHideNewOverLay, setShowHideNewOverLay] = useState(false);
+    switch(filter) {
+      case 'Show Completed':
+        return list.filter((item) => item.isCompleted)
+      case 'Show Uncompleted':
+        return list.filter((item) => !item.isCompleted)
+      default:
+        return list
+    }
+  },
+});
 
-  const showHideOverNewOverlayOnClick = () => {
-    setShowHideNewOverLay(!showHideNewOverLay);
-  };
+let id = 0;
+function getId(){
+  return id++;
+}
+
+function TodoItem(props) {
+
+  const [list, setList] = useRecoilState(listAtom);
+  const index = list.findIndex((listitem) => listitem === props.item);
+
+  const editText = (event) => {
+    setList([...list.slice(0, index), {id: props.item.id, isCompleted: props.item.isCompleted, text: event.target.value}, ...list.slice(index+1)]);
+  }
+
+  const deleteItem = () => {
+    setList([...list.slice(0, index), ...list.slice(index+1)]);
+  }
+
+  const toggleIsComplete = () => {
+    setList([...list.slice(0, index), {id: props.item.id, isCompleted: !props.item.isCompleted, text: props.item.text}, ...list.slice(index+1)]);
+  }
 
   return (
-    // <SelectedElementStore>
     <>
-      {!showHideNewOverLay ? (
-        <Tool
-          initSupportPanelOpen
-          onUndo={() => {
-            console.log(">>>undo clicked");
-          }}
-          onRedo={() => {
-            console.log(">>>redo clicked");
-          }}
-          title={"My Doc"}
-          // responsiveControls={[]}
-          headerMenuPanels={[
-            <HeaderMenuPanelButton buttonText="Add">
-              {"content 1"}
-            </HeaderMenuPanelButton>,
-            <HeaderMenuPanelButton buttonText="Save">
-              {"content 2"}
-            </HeaderMenuPanelButton>,
-          ]}
-        >
-          <NavPanel>
-            Nav Panel
-          </NavPanel>
+      <input type ="checkbox" checked = {props.item.isCompleted} onChange = {toggleIsComplete} />
+      <input type = "text" value = {props.item.text} onChange = {editText} />
+      <button onClick = {deleteItem}>X</button>
+    </>
+  );
+}
 
-          <MainPanel
-            setShowHideNewOverLay={setShowHideNewOverLay}
-            // responsiveControls={[]}
-          >
-            <div
-              onClick={() => {
-                showHideOverNewOverlayOnClick();
-              }}
-            >
-              Click for Overlay
-            </div>
+function ListView() {
+  const listItems = useRecoilValue(filteredList);
+  return(
+    <div>
+      <ol>
+        {listItems ? listItems.map((listItem) => (<li key = {listItem.id}><TodoItem item = {listItem} /></li>)) : "Add Items"}
+      </ol>
+    </div>
+  );
+}
 
-            <h3> This is Main Panel</h3>
-            <p>click Switch button in header to see support panel</p>
-            <p>
-              Define responsiveControls to see for standard components section
-              which are responsive and collapses according the width available
-            </p>
 
-            <h2>Header Menu Panels </h2>
-            <p>Click add and save to see header menu panels section </p>
-          </MainPanel>
+function ItemCreator() { 
+  const [inputValue, setInputValue] = useState('');
+  const setListItems = useSetRecoilState(listAtom);
 
-          <SupportPanel
-          // responsiveControls={[]}
-          >
-            <h3>Support Panel Content</h3>
+  const addItem = () => {
+    setListItems((oldItems) => ([...oldItems, {id: getId(), isCompleted: false, text: inputValue}]));
+    setInputValue('');
+  }
 
-            <p>
-              Define responsiveControls to see for standard components section
-              which are responsive and collapses according the width available
-            </p>
-          </SupportPanel>
-          <MenuPanel>
-            <MenuPanelSection title="Font">
-              <CollapseSection>
-                <SectionDivider type="single">
-                  <ActionButton
-                    handleClick={() => {
-                      alert();
-                    }}
-                  />
-                  <Menu label="actions">
-                    <MenuItem
-                      value="Times"
-                      onSelect={() => {
-                        alert("Times Selected");
-                      }}
-                    />
-                    <MenuItem
-                      value="Ariel"
-                      onSelect={() => {
-                        alert("Ariel Selected");
-                      }}
-                    />
-                  </Menu>
-                </SectionDivider>
-              </CollapseSection>
-              <CollapseSection></CollapseSection>
-            </MenuPanelSection>
-            <MenuPanelSection title="style">
-              Menu Panel Style Content
-            </MenuPanelSection>
-          </MenuPanel>
-        </Tool>
-      ) : (
-        <Overlay
-          isOpen={showHideNewOverLay}
-          onUndo={() => {}}
-          onRedo={() => {}}
-          title={"my doc"}
-          onClose={() => {
-            setShowHideNewOverLay(false);
-          }}
-          // responsiveControls={[<ResponsiveControls/>]}
-          headerMenuPanels={[]}
-        >
-          <MainPanel responsiveControls={[]}>Overlay Main panel</MainPanel>
-          <SupportPanel responsiveControls={[]}>Overlay Support</SupportPanel>
-          <MenuPanel>
-            <MenuPanelSection title="Font">
-              <CollapseSection>
-                <SectionDivider type="single">
-                  <ActionButton
-                    handleClick={() => {
-                      alert();
-                    }}
-                  />
-                  <Menu label="actions">
-                    <MenuItem
-                      value="Times"
-                      onSelect={() => {
-                        alert("Times Selected");
-                      }}
-                    />
-                    <MenuItem
-                      value="Ariel"
-                      onSelect={() => {
-                        alert("Ariel Selected");
-                      }}
-                    />
-                  </Menu>
-                </SectionDivider>
-              </CollapseSection>
-              <CollapseSection></CollapseSection>
-            </MenuPanelSection>
-            <MenuPanelSection title="style">
-              Menu Panel Style Content
-            </MenuPanelSection>
-          </MenuPanel>
-        </Overlay>
-      )}
-      </>
-    // </SelectedElementStore>
+  return(
+    <>
+      <input value = {inputValue} onChange = {(event) => setInputValue(event.target.value)} />
+      <button onClick = {addItem}>Add</button>
+    </>
+  );
+}
+
+function Filter() {
+  
+  const [filter, setFilter] = useRecoilState(filterState);
+  const updateFilter = (e) => {
+    setFilter(e.target.value)
+  }
+
+  return(
+    <>
+      Filter
+      <select onChange = {updateFilter}>
+        <option value = 'Show All'>All</option>
+        <option value = 'Show Completed'>Completed</option>
+        <option value = 'Show Uncompleted'>Uncompleted</option>
+      </select>
+    <p>{filter}</p>
+    </>
+  )
+}
+
+export default function DoenetExampleTool(props) {
+  return(
+    <RecoilRoot>
+      <Filter />
+      <ListView />
+      <ItemCreator />
+    </RecoilRoot>
   );
 }
