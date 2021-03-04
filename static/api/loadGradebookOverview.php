@@ -29,22 +29,27 @@ if (!isset($_REQUEST["courseId"])) {
         $result = $conn->query($sql); 
         $response_arr = array();
 
-        while ($row = $result->fetch_assoc()) {
-            array_push($response_arr,
-                array(
-                    $row['assignmentId'],
-                    $row['title'],
-                    $row['credit'],
-                    $row['userId']
-                )
-            );
+        if ($result->num_rows > 0){
+            while ($row = $result->fetch_assoc()) {
+                array_push($response_arr,
+                    array(
+                        $row['assignmentId'],
+                        $row['title'],
+                        $row['credit'],
+                        $row['userId']
+                    )
+                );
+            }
+    
+            // set response code - 200 OK
+            http_response_code(200);
+    
+            // make it json format
+            echo json_encode($response_arr);
+        } else {
+            http_response_code(404);
+            echo "Database Retrieval Error: No such course: '$courseId'";
         }
-
-        // set response code - 200 OK
-        http_response_code(200);
-
-        // make it json format
-        echo json_encode($response_arr);
     } 
 
     

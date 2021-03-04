@@ -45,7 +45,7 @@ if (!isset($_GET["courseId"])) {
         echo json_encode($response_arr);
 	} else {
         http_response_code(404);
-		echo "Database Retrieval Error: No such course: '$courseId'";
+		echo "Database Retrieval Error: No students in course: '$courseId'";
 	}
 
 	

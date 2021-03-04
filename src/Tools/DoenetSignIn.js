@@ -48,17 +48,18 @@ export default function DoenetSignIn(props) {
   //Comment this if statement out if you are working on 
   // sign in or multiple devices
   
-  // if (window.location.hostname === "localhost"){
-  //   console.log("Auto Signing In Devuser");
-  //   let emailaddress = "devuser@example.com";
-  //   let deviceName = "Cacao tree";
-  //   let maxAge = "2147483647"
-  //   let cookieSettingsObj = { path: "/", maxAge };
-  //   setDeviceNameCookie('Device', deviceName, cookieSettingsObj);
-  //   setStayCookie('Stay',maxAge,cookieSettingsObj);
-  //   location.href = `/api/jwt.php?emailaddress=${encodeURIComponent(emailaddress)}&nineCode=${encodeURIComponent("123456789")}&deviceName=${deviceName}&newAccount=${"0"}&stay=${"1"}`;
+  console.log("Auto sign in if:");
+  if (window.location.hostname === "localhost"){
+    console.log("Auto Signing In Devuser");
+    let emailaddress = "devuser@example.com";
+    let deviceName = "Cacao tree";
+    let maxAge = "2147483647"
+    let cookieSettingsObj = { path: "/", maxAge };
+    setDeviceNameCookie('Device', deviceName, cookieSettingsObj);
+    setStayCookie('Stay',maxAge,cookieSettingsObj);
+    location.href = `/api/jwt.php?emailaddress=${encodeURIComponent(emailaddress)}&nineCode=${encodeURIComponent("123456789")}&deviceName=${deviceName}&newAccount=${"0"}&stay=${"1"}`;
 
-  // }
+  }
 
   // ** *** *** *** *** **
 
@@ -88,7 +89,7 @@ export default function DoenetSignIn(props) {
             stay = "1";
           }
 
-          // console.log(`/api/jwt.php?emailaddress=${encodeURIComponent(email)}&nineCode=${encodeURIComponent(nineCode)}&deviceName=${deviceName}&newAccount=${newAccount}&stay=${stay}`)
+          console.log(`/api/jwt.php?emailaddress=${encodeURIComponent(email)}&nineCode=${encodeURIComponent(nineCode)}&deviceName=${deviceName}&newAccount=${newAccount}&stay=${stay}`)
           location.href = `/api/jwt.php?emailaddress=${encodeURIComponent(email)}&nineCode=${encodeURIComponent(nineCode)}&deviceName=${deviceName}&newAccount=${newAccount}&stay=${stay}`;
         }else{
           if (resp.data.reason === "Code expired") {

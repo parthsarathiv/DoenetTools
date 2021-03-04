@@ -17,8 +17,8 @@ export function getCourses_CI(callback){
   
         axios.get(phpUrl)
           .then(resp => {
-            // console.log('loadUserCourses resp',resp);
-    
+            // console.log('>>> loadUserCourses resp',resp);
+            console.log('>>> resp.data',resp.data);
             if (resp.data.success && resp.data.courseInfo.length > 0){
             //Store in IndexedDB
             for (let courseInfo of resp.data.courseInfo){
