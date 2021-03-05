@@ -48,7 +48,6 @@ export default function DoenetSignIn(props) {
   //Comment this if statement out if you are working on 
   // sign in or multiple devices
   
-  console.log("Auto sign in if:");
   if (window.location.hostname === "localhost"){
     console.log("Auto Signing In Devuser");
     let emailaddress = "devuser@example.com";

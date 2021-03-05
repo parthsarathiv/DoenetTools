@@ -3,7 +3,7 @@ import me from 'math-expressions';
 
 export default class Parabola extends Curve {
   static componentType = "parabola";
-  static rendererType = "functioncurve";
+  static rendererType = "curve";
 
   static returnChildLogic(args) {
     let childLogic = super.returnChildLogic(args);
@@ -34,15 +34,17 @@ export default class Parabola extends Curve {
     return childLogic;
   }
 
-  static returnStateVariableDefinitions() {
+  static returnStateVariableDefinitions(args) {
 
-    let stateVariableDefinitions = super.returnStateVariableDefinitions();
+    let stateVariableDefinitions = super.returnStateVariableDefinitions(args);
 
-    stateVariableDefinitions.nVariables = {
+    stateVariableDefinitions.curveType = {
+      forRenderer: true,
       returnDependencies: () => ({}),
-      definition: () => ({ newValues: { nVariables: 2 } })
+      definition: () => ({ newValues: { curveType: "function" } })
     }
 
+    delete stateVariableDefinitions.variableForChild;
 
     // variable to store essential value of a
     // that we can then use its values to calculate b and c
@@ -70,7 +72,7 @@ export default class Parabola extends Curve {
     stateVariableDefinitions.nThroughPoints = {
       returnDependencies: () => ({
         throughChild: {
-          dependencyType: "childStateVariables",
+          dependencyType: "child",
           childLogicName: "atMostOneThrough",
           variableNames: ["nPoints"]
         }
@@ -162,7 +164,7 @@ export default class Parabola extends Curve {
 
           dependenciesByKey[arrayKey] = {
             throughChild: {
-              dependencyType: "childStateVariables",
+              dependencyType: "child",
               childLogicName: "atMostOneThrough",
               variableNames: ["pointX" + varEnding]
             }
@@ -244,8 +246,6 @@ export default class Parabola extends Curve {
 
       }
     }
-
-
 
 
     stateVariableDefinitions.numericalThroughPoints = {
@@ -1000,31 +1000,42 @@ export default class Parabola extends Curve {
       }
     }
 
-    stateVariableDefinitions.f = {
+    stateVariableDefinitions.fs = {
       forRenderer: true,
-      returnDependencies: () => ({
-        a: {
-          dependencyType: "stateVariable",
-          variableName: "a"
-        },
-        b: {
-          dependencyType: "stateVariable",
-          variableName: "b"
-        },
-        c: {
-          dependencyType: "stateVariable",
-          variableName: "c"
-        },
-      }),
-      definition: function ({ dependencyValues }) {
-        let f = function (x) {
-          return dependencyValues.a * x * x + dependencyValues.b * x + dependencyValues.c
+      isArray: true,
+      entryPrefixes: ["f"],
+      defaultEntryValue: () => 0,
+      returnArraySizeDependencies: () => ({}),
+      returnArraySize: () => [1],
+      returnArrayDependenciesByKey() {
+        let globalDependencies = {
+          a: {
+            dependencyType: "stateVariable",
+            variableName: "a"
+          },
+          b: {
+            dependencyType: "stateVariable",
+            variableName: "b"
+          },
+          c: {
+            dependencyType: "stateVariable",
+            variableName: "c"
+          },
         }
 
-        return { newValues: { f } }
+        return { globalDependencies };
+      },
+      arrayDefinitionByKey({ globalDependencyValues }) {
+
+        let f = function (x) {
+          return globalDependencyValues.a * x * x + globalDependencyValues.b * x + globalDependencyValues.c
+        }
+
+        return { newValues: { fs: [f] } }
 
       }
     }
+
 
     stateVariableDefinitions.nearestPoint = {
       returnDependencies: () => ({
@@ -1055,17 +1066,8 @@ export default class Parabola extends Curve {
     }
 
     stateVariableDefinitions.childrenToRender = {
-      returnDependencies: () => ({
-        throughChild: {
-          dependencyType: "childIdentity",
-          childLogicName: "atMostOneThrough"
-        }
-      }),
-      definition: ({ dependencyValues }) => ({
-        newValues: {
-          childrenToRender: dependencyValues.throughChild.map(x => x.componentName)
-        }
-      })
+      returnDependencies: () => ({}),
+      definition: () => ({ newValues: { childrenToRender: [] } })
     }
 
     return stateVariableDefinitions;
