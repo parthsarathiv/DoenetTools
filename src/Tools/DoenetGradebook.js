@@ -24,8 +24,6 @@ import {
 } from "react-router-dom";
 
 import Tool, { openOverlayByName } from "../imports/Tool/Tool";
-import { useMenuPanelController } from "../imports/Tool/MenuPanel";
-import GlobalFont from "../fonts/GlobalFont.js";
 
 import axios from "axios";
 
@@ -33,10 +31,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
-import { getCourses_CI, setSelected_CI, updateCourses_CI } from "../imports/courseInfo";
+import { useToolControlHelper } from "../imports/Tool/ToolRoot";
 
 // React Table Styling
-const Styles = styled.div`
+export const Styles = styled.div`
   padding: 1rem;
 
   table {
@@ -181,7 +179,6 @@ const assignmentData = selector({
     }
 })
 
-
 const studentDataQuerry = atom({
     key: "studentDataQuerry",
     default: selector({
@@ -199,7 +196,7 @@ const studentDataQuerry = atom({
     })
 })
 
-const studentData = selector({
+export const studentData = selector({
     key: "studentData",
     get: ({get}) => {
         let data = get(studentDataQuerry)
@@ -223,7 +220,6 @@ const studentData = selector({
         return students;
     }
 })
-
 
 const overViewDataQuerry = atom({
     key:"overViewDataQuerry",
@@ -292,7 +288,7 @@ const attemptDataQuerry = atomFamily({
     })
 })
 
-const attemptData = selectorFamily({
+export const attemptData = selectorFamily({
     key: "attemptData",
     get: (assignmentId) => ({get}) => {
 
@@ -346,7 +342,7 @@ const specificAttemptDataQuerry = atomFamily({
     })
 })
 
-const specificAttemptData = selectorFamily({
+export const specificAttemptData = selectorFamily({
     key: 'specificAttemptData',
     get: (params) => ({get}) => {
         let data = get(specificAttemptDataQuerry(params))
@@ -369,7 +365,7 @@ const specificAttemptData = selectorFamily({
 })
 
 // Table Component
-function Table({ columns, data }) {
+export function Table({ columns, data }) {
 
     const filterTypes = React.useMemo(
         () => ({
@@ -488,6 +484,8 @@ function DefaultColumnFilter({
 }
 
 function GradebookOverview(props) {
+    const { open, activateMenuPanel } = useToolControlHelper();
+
     let overviewTable = {}
     overviewTable.headers=[{
         Header: "Name",
@@ -500,9 +498,21 @@ function GradebookOverview(props) {
     if(assignments.state == 'hasValue'){
         for(let assignmentId in assignments.contents){
             overviewTable.headers.push({
-                Header: <Link to={`/assignment/?assignmentId=${assignmentId}`}>{assignments.contents[assignmentId]}</Link>,
+                //`/assignment/?assignmentId=${assignmentId}`
+                Header: <a onClick = {(e) =>{
+                    e.stopPropagation()
+                    //console.log("trying overlay");
+                    open("gradebookassignmentview", "", "", assignmentId, "", "")
+                    //open("calendar", "fdsa", "f001");
+                }
+                }>{assignments.contents[assignmentId]}</a>,
                 accessor: assignmentId,
-                disableFilters: true
+                disableFilters: true,
+                // <a onClick={() => {
+                //     open("calendar", "fdsa", "f001");
+                //   }}>
+                
+
             })
         }
     }
@@ -569,100 +579,6 @@ function GradebookOverview(props) {
         </Styles>
     )
 
-}
-
-function GradebookAssignmentView(props){
-    let assignmentId = props.assignmentId
-    let assignmentsTable = {}
-    let attempts = useRecoilValueLoadable(attemptData(assignmentId))
-    let students = useRecoilValueLoadable(studentData)
-
-    let maxAttempts = 0;
-
-    if(attempts.state == 'hasValue'){
-        for (let userId in attempts.contents) {
-            let len = Object.keys(attempts.contents[userId].attempts).length;
-    
-            if (len > maxAttempts) maxAttempts = len;
-        }
-    }
-
-    assignmentsTable.headers = [
-        {
-            Header: "Student",
-            accessor: "student",
-        }
-    ];
-
-    for (let i = 1; i <= maxAttempts; i++) {
-        assignmentsTable.headers.push(
-        {
-            Header: "Attempt " + i,
-            accessor: "a"+i,
-            disableFilters: true
-        })
-    }
-
-    assignmentsTable.headers.push({
-        Header: "Assignment Grade",
-        accessor: "grade",
-        disableFilters: true
-    })
-
-    assignmentsTable.rows = [];
-    
-    if(students.state == 'hasValue'){
-        for (let userId in students.contents) {
-            let firstName = students.contents[userId].firstName;
-            let lastName = students.contents[userId].lastName;
-            
-            let row = {};
-    
-            row["student"] = firstName + " " + lastName
-    
-            if(attempts.state == 'hasValue'){
-                for (let i = 1; i <= maxAttempts; i++) {
-                    let attemptCredit = attempts.contents[userId].attempts[i];
-        
-                    row[("a"+i)] = 
-                    <Link to={`/attempt/?assignmentId=${assignmentId}&userId=${userId}&attemptNumber=${i}`}>
-                    {
-                        attemptCredit ? attemptCredit * 100 + "%" : "" // if attemptCredit is `undefined`, we still want a table cell so that the footer column still shows up right.
-                    }
-                    </Link>
-                }
-
-                row["grade"] = attempts.contents[userId].grade ? attempts.contents[userId].grade : ""
-            }
-    
-            
-            
-            assignmentsTable.rows.push(row);
-        }
-    }
-
-    return(
-        <Styles>
-            <Table columns = {assignmentsTable.headers} data = {assignmentsTable.rows}/>
-        </Styles>
-    )
-
-}
-
-function GradebookDoenetMLView(props){
-    let assignmentId = props.assignmentId;
-    let userId = props.userId;
-    let attemptNumber = props.attemptNumber;
-    let specificAttempt = useRecoilValueLoadable(specificAttemptData({assignmentId, userId, attemptNumber}))
-    if(specificAttempt.state == 'hasValue'){
-        return(<div>
-            <p>{specificAttempt.contents.doenetML}</p>
-        </div>)
-    }else{
-        return(<>
-            <p>{specificAttempt.state}</p>
-        </>)
-    }
 }
 
 function CourseSelector(props){

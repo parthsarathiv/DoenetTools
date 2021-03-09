@@ -8,11 +8,13 @@ import {
 import Assignment from "./Overlays/Assignment";
 import Editor from "./Overlays/Editor";
 import Calendar from "./Overlays/Calendar";
+import GradebookAssignmentView from "./Overlays/GradebookAssignmentView";
 import Image from "./Overlays/Image";
 import Toast from "./Toast";
 import { useMenuPanelController } from "./Panels/MenuPanel";
 import { useSupportPanelController } from "./Panels/SupportPanel";
 import { GlobalStyle } from "../../Tools/DoenetStyle";
+import GradebookDoenetMLView from "./Overlays/GradebookDoenetMLView";
 // import doenetImage from "../../media/Doenet_Logo_cloud_only.png";
 
 const layerStackAtom = atom({
@@ -25,15 +27,8 @@ export const useToolControlHelper = () => {
   const activateMenuPanel = useMenuPanelController();
   const activateSupportPanel = useSupportPanelController();
 
-  const openOverlay = ({
-    type,
-    title,
-    contentId,
-    courseId,
-    branchId,
-    assignmentId,
-  }) => {
-    switch (type.toLowerCase()) {
+  const open = (name, branchId, title, assignmentId, userId, attemptNumber) => {
+    switch (name.toLowerCase()) {
       case "editor":
         setLayers((old) => [
           ...old,
@@ -44,13 +39,25 @@ export const useToolControlHelper = () => {
           />,
         ]);
         break;
+      case "gradebookassignmentview":
+        setLayers((old) => [
+          ...old,
+          <GradebookAssignmentView assignmentId = {assignmentId} />,
+        ]);
+        break;
+      case "gradebookdoenetmlview":
+        setLayers((old) => [
+          ...old,
+          <GradebookDoenetMLView assignmentId = {assignmentId} userId = {userId} attemptNumber = {attemptNumber} />,
+        ]);
+        break;
       case "assignment":
         setLayers((old) => [
           ...old,
           <Assignment
             branchId={branchId}
+            contentId={courseId}
             assignmentId={assignmentId}
-            courseId={courseId}
             key={`AssignmentLayer${old.length + 1}`}
           />,
         ]);
@@ -60,7 +67,7 @@ export const useToolControlHelper = () => {
           ...old,
           <Calendar
             branchId={branchId}
-            contentId={contentId}
+            contentId={courseId}
             key={`CalendarLayer${old.length + 1}`}
           />,
         ]);
@@ -68,7 +75,11 @@ export const useToolControlHelper = () => {
       case "image":
         setLayers((old) => [
           ...old,
-          <Image branchId={branchId} key={`ImageLayer${old.length + 1}`} />,
+          <Image
+            branchId={branchId}
+            contentId={courseId}
+            key={`ImageLayer${old.length + 1}`}
+          />,
         ]);
         break;
       default:
@@ -86,7 +97,7 @@ export const useToolControlHelper = () => {
   };
 
   return {
-    openOverlay,
+    open,
     close,
     activateMenuPanel,
     activateSupportPanel,
