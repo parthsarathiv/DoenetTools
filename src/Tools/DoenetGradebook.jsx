@@ -45,6 +45,7 @@ import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons'
 import { useToolControlHelper } from "../imports/Tool/ToolRoot";
 
 import DriveCards from "../imports/DriveCards";
+import Button from "../imports/PanelHeaderComponents/Button";
 // React Table Styling
 export const Styles = styled.div`
   padding: 1rem;
@@ -591,6 +592,15 @@ function GradebookOverview(props) {
 
 }
 
+function BackButton(props) {
+
+    return(
+        <button onClick = {() => history.go(-1)}>
+            Courses
+        </button>
+    )
+}
+
 function CourseSelector(props){
     
     return(<select onChange = {(event) => props.callback(event.target.value)}>
@@ -616,6 +626,8 @@ export default function DoenetGradebook(props){
     // let courseList = useRecoilValueLoadable(coursesData);
     // console.log(courseList.contents)
 
+    console.log("courseId", courseIdVal);
+    
     return (
       <Tool>
           <headerPanel title="Gradebook">
@@ -623,7 +635,7 @@ export default function DoenetGradebook(props){
           <mainPanel>
 
             {/* {courseIdVal != '' ? <GradebookOverview /> : courseList.state == 'hasValue' ? <CourseSelector callback = {setCourseIdVal} courseList = {courseList.contents.courseInfo}/> : <p>Loading...</p>} */}
-            {courseIdVal != '' ? <GradebookOverview /> :
+            {courseIdVal != '' ? <><BackButton callback = {setCourseIdVal}/><GradebookOverview /></> :
                 <DriveCards
                 types={['course']}
                 subTypes={['Administrator']}
